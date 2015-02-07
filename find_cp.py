@@ -6,11 +6,54 @@ import csv
 import re
 import unicodedata
 
-prov_cp = {'jujuy': ['Y', 'Y4600', ['4411 4655']], 'san_luis': ['D', 'D5700', ['5421 5888', '6721 6389']], 'la_pampa': ['L', 'L6300', ['5621 5621', '6200 6621', '8133 8336']], 'catamarca': ['K', 'K4700', ['4139 4753', '5260 5345']], 'caba': ['C', 'C1425', []], 'salta': ['A', 'A4400', ['4126 4651', '3636 3636']], 'chubut': ['U', 'U9103', ['9000 9227', '8415 8532']], 'santa_fe': ['S', 'S3000', ['2000 2921', '3000 3592', '6009 6106']], 'santa_cruz': ['Z', 'Z9400', ['9011 9420']], 'chaco': ['H', 'H3500', ['3500 3734']], 'mendoza': ['M', 'M5500', ['5435 5645', '6279 6279']], 'la_rioja': ['F', 'F5300', ['5263 5717']], 'tierra_del_fuego': ['V', 'V9410', ['9409 9421']], 'buenos_aires': ['B', 'B1878', ['7000 7641', '2700 2946', '6000 6748', '8151 8512', '1601 1987']], 'neuquen': ['Q', 'Q8300', ['8300 8407']], 'misiones': ['N', 'N3300', ['3300 3386']], 'corrientes': ['W', 'W3400', ['3185 3641']], 'formosa': ['P', 'P3600', ['3511 3636']], 'cordoba': ['X', 'X5000', ['5000 5988', '2189 2686', '6101 6279']], 'entre_rios': ['E', 'E3100', ['2000 2854', '3100 3287', '1647 1647']], 'santiago_del_estero': ['G', 'G4200', ['4176 4613', '5249 5266', '2340 2357', '3061 3766']], 'san_juan': ['J', 'J5400', []], 'tucuman': ['T', 'T4000', ['4000 4434']], 'rio_negro': ['R', 'R8500', ['9210 9210', '8134 8536']]}
+prov_cp = {
+    'jujuy': ['Y', 'Y4600', ['4411 4655']], 'san_luis': ['D', 'D5700', ['5421 5888', '6721 6389']], 
+    'la_pampa': ['L', 'L6300', ['5621 5621', '6200 6621', '8133 8336']], 
+    'catamarca': ['K', 'K4700', ['4139 4753', '5260 5345']], 'caba': ['C', 'C1425', []], 
+    'salta': ['A', 'A4400', ['4126 4651', '3636 3636']], 
+    'chubut': ['U', 'U9103', ['9000 9227', '8415 8532']], 
+    'santa_fe': ['S', 'S3000', ['2000 2921', '3000 3592', '6009 6106']], 
+    'santa_cruz': ['Z', 'Z9400', ['9011 9420']], 'chaco': ['H', 'H3500', ['3500 3734']], 
+    'mendoza': ['M', 'M5500', ['5435 5645', '6279 6279']], 
+    'la_rioja': ['F', 'F5300', ['5263 5717']], 
+    'tierra_del_fuego': ['V', 'V9410', ['9409 9421']], 
+    'buenos_aires': ['B', 'B1878', ['7000 7641', '2700 2946', '6000 6748', '8151 8512', '1601 1987']], 
+    'neuquen': ['Q', 'Q8300', ['8300 8407']], 
+    'misiones': ['N', 'N3300', ['3300 3386']], 
+    'corrientes': ['W', 'W3400', ['3185 3641']], 
+    'formosa': ['P', 'P3600', ['3511 3636']], 
+    'cordoba': ['X', 'X5000', ['5000 5988', '2189 2686', '6101 6279']], 
+    'entre_rios': ['E', 'E3100', ['2000 2854', '3100 3287', '1647 1647']], 
+    'santiago_del_estero': ['G', 'G4200', ['4176 4613', '5249 5266', '2340 2357', '3061 3766']], 
+    'san_juan': ['J', 'J5400', []], 
+    'tucuman': ['T', 'T4000', ['4000 4434']], 
+    'rio_negro': ['R', 'R8500', ['9210 9210', '8134 8536']]
+}
 
-cap_cp = {'Y4600': 'san_salvador_de_jujuy', 'E3100': 'entre_rios', 'K4700': 'san_fernando_del_valle_de_catamarca', 'V9410': 'tierra_del_fuego', 'P3600': 'formosa', 'D5700': 'san_luis', 'X5000': 'cordoba', 'S3000': 'santa_fe', 'M5500': 'mendoza', 'A4400': 'salta', 'T4000': 'tucuman', 'H3500': 'resistencia', 'R8500': 'rio_negro', 'J5400': 'san_juan', 'W3400': 'corrientes', 'N3300': 'posadas', 'L6300': 'santa_rosa', 'B1878': 'la_plata', 'Q8300': 'neuquen', 'G4200': 'santiago_del_estereo', 'U9103': 'rawson', 'Z9400': 'rio_gallego', 'F5300': 'la_rioja'}
+cap_cp = {
+    'Y4600': 'san_salvador_de_jujuy', 
+    'E3100': 'entre_rios', 
+    'K4700': 'san_fernando_del_valle_de_catamarca', 
+    'V9410': 'tierra_del_fuego', 'P3600': 'formosa', 
+    'D5700': 'san_luis', 'X5000': 'cordoba', 
+    'S3000': 'santa_fe', 'M5500': 'mendoza', 
+    'A4400': 'salta', 'T4000': 'tucuman', 
+    'H3500': 'resistencia', 
+    'R8500': 'rio_negro', 
+    'J5400': 'san_juan', 
+    'W3400': 'corrientes', 
+    'N3300': 'posadas', 
+    'L6300': 'santa_rosa', 
+    'B1878': 'la_plata', 
+    'Q8300': 'neuquen', 
+    'G4200': 'santiago_del_estereo', 
+    'U9103': 'rawson', 
+    'Z9400': 'rio_gallego', 
+    'F5300': 'la_rioja'
+}
 
-__filename = '/home/delkar/Desktop/localidades-ar/codigo-postal/list_cp/{0}.csv'
+MAIN_PATH  = ''
+__filename = MAIN_PATH + '/list_cp/{0}.csv'
 
 def elimina_tildes(s):
     #elimina_tildes(u'cadenaconacento') --> u'cadenasinacento'
@@ -27,7 +70,9 @@ def fileopen(provin):
 def find_cp(provin='', ciudad='', codigo_postal=0):
     
     """
-        Se ingresar como parametro una provincia con ciudad o provincia con codigo postal o ciudad con codigo postal, sino simplemente provincia, ciudad o codigo postal y retorna, la provincia con su ciudad el codigo postal argentino y codigo postal.
+        Se ingresar como parametro una provincia con ciudad o provincia con codigo postal 
+        o ciudad con codigo postal, sino simplemente provincia, ciudad o codigo postal y 
+        retorna, la provincia con su ciudad el codigo postal argentino y codigo postal.
     """
 
     provin = elimina_tildes(provin.decode('utf-8').lower()) if len(provin) > 2 else ''
@@ -70,7 +115,10 @@ def find_cp(provin='', ciudad='', codigo_postal=0):
             capital_cp = prov_cp[prov][1]
             ciudad = cap_cp[capital_cp]
         
-        return prov.replace("_", " ").title(), ciudad.replace("_", " ").title(), str(capital_cp[1:len(capital_cp)]), capital_cp+'AAA'
+        provincia = prov.replace("_", " ").title()
+        ciudad = ciudad.replace("_", " ").title()
+
+        return provincia ,ciudad, str(capital_cp[1:len(capital_cp)]), capital_cp+'AAA'
         
     elif ciudad:
         try:
