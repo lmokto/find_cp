@@ -115,8 +115,38 @@ def find_cp(provin='', ciudad='', codigo_postal=0):
 
 if __name__ == '__main__':
 
-    print find_cp(provin="buenos aires")    
-    # CPAProponente = [ 5000, 5000, 1878, 1640, 5721, 5000, 5000, 5000, 5000, 5634, 7225, 5000, 9400, 5000, 5000, 5000, 4512, 5000, 5000, 6634, 5750, 5000, 9400, 9400, 5000, 9400, 9400, 9400 ]
+    #print find_cp(provin="buenos aires")    
+    CPAProponente = [ 
+        5000, 
+        5000, 
+        1878, 
+        1640, 
+        5721, 
+        5000, 
+        5000, 
+        5000, 
+        5000, 
+        5634, 
+        7225, 
+        5000, 
+        9400, 
+        5000, 
+        5000, 
+        5000, 
+        4512, 
+        5000, 
+        5000, 
+        6634, 
+        5750, 
+        5000, 
+        9400, 
+        9400, 
+        5000, 
+        9400, 
+        9400, 
+        9400 
+    ]
     
-    # for cp in CPAProponente:
-    #     print find_cp(codigo_postal=cp)
+    # test
+    for cp in CPAProponente:
+        print find_cp(codigo_postal=cp)
