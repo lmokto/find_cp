@@ -91,12 +91,12 @@ def find_cp(provincia='', ciudad='', codigo_postal=0):
         o ciudad con codigo postal, sino simplemente provincia, ciudad o codigo postal y 
         retorna, la provincia con su ciudad el codigo postal argentino y codigo postal.
 
-        python args.py -p provincia -l pinamar
-        python args.py -p provincia -cp 7167
-        python args.py -l pinamar -cp 7167
-        python args.py -p provincia
+        python args.py -p "buenos aires" -l "pinamar"
+        python args.py -p "buenos aires" -cp 7167
+        python args.py -l "pinamar" -cp 7167
+        python args.py -p "buenos aires"
         python args.py -cp 7167
-        python args.py -l pinamar
+        python args.py -l "pinamar"
 
     """
     provincia, ciudad, code = normalizador(provincia, ciudad, codigo_postal)
