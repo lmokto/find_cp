@@ -5,6 +5,7 @@ import sys
 import csv
 import re
 import unicodedata
+import itertools
 
 prov_cp = {
     'jujuy': ['Y', 'Y4600', ['4411 4655']], 'san_luis': ['D', 'D5700', ['5421 5888', '6721 6389']], 
@@ -52,46 +53,69 @@ cap_cp = {
     'F5300': 'la_rioja'
 }
 
-MAIN_PATH  = ''
+MAIN_PATH  = '/home/delkar/Desktop/localidades-ar/codigo-postal/find_cp'
 __filename = MAIN_PATH + '/list_cp/{0}.csv'
+dict_cmd = dict(itertools.izip_longest(*[iter(sys.argv[1:])] * 2, fillvalue=""))
 
 def elimina_tildes(s):
     #elimina_tildes(u'cadenaconacento') --> u'cadenasinacento'
     return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn')).encode('utf-8')
 
-def fileopen(provin):
+def elimina_ruido(string):
+    #elimina espacio y le agrega un guio, elimina mayusculas
+    return string.replace(' ', '_').lower()
 
-    prov = provin.replace(' ', '_').lower()
-    filename = __filename.format(prov)
+def normalizador(provincia='', ciudad='', codigo_postal=0):
+    #normaliza las variables
+    if provincia:
+        provincia = elimina_tildes(provincia.decode('utf-8').lower()) if len(provincia) > 2 else ''
+        provincia = elimina_ruido(provincia)
+    if ciudad:
+        ciudad = elimina_tildes(ciudad.decode('utf-8').lower()) if len(ciudad) > 2 else ''
+    if codigo_postal:
+        codigo_postal = codigo_postal if isinstance(codigo_postal, int) else False
+    return provincia, ciudad, codigo_postal
+
+
+def fileopen(provincia):
+
+    filename = __filename.format(provincia)
     reader = csv.DictReader(open(filename))
     
     return reader
 
-def find_cp(provin='', ciudad='', codigo_postal=0):
-    
+def find_cp(provincia='', ciudad='', codigo_postal=0):
+
     """
         Se ingresar como parametro una provincia con ciudad o provincia con codigo postal 
         o ciudad con codigo postal, sino simplemente provincia, ciudad o codigo postal y 
         retorna, la provincia con su ciudad el codigo postal argentino y codigo postal.
-    """
 
-    provin = elimina_tildes(provin.decode('utf-8').lower()) if len(provin) > 2 else ''
-    ciudad = elimina_tildes(ciudad.decode('utf-8').lower()) if len(ciudad) > 2 else ''
-    code = codigo_postal if isinstance(codigo_postal, int) else False
+        python args.py -p provincia -l pinamar
+        python args.py -p provincia -cp 7167
+        python args.py -l pinamar -cp 7167
+        python args.py -p provincia
+        python args.py -cp 7167
+        python args.py -l pinamar
+
+    """
+    provincia, ciudad, code = normalizador(provincia, ciudad, codigo_postal)
+
+    if provincia in prov_cp.keys() and ciudad:
     
-    if provin.replace(' ', '_').lower() in prov_cp.keys() and ciudad:
-        
-        reader = fileopen(prov)
+        reader = fileopen(provincia)
 
         for row in reader:
             rr = row.values()
             if ' '.join([str(x) for x in (rr[0].split()[1:])]).lower() == ciudad:
                 cp = rr[0].split()[0]
-                cpa = prov_cp[prov][0]+rr[0].split()[0]+"AAA"
-                
-        return provin, ciudad, cpa, str(cp)
+                cpa = prov_cp[provincia][0]+rr[0].split()[0]+"AAA"
+                codigo = str(cp)
+                ciudad = ciudad.title() 
+                provincia = provincia.replace("_", " ").title()
+        return provincia, ciudad, codigo, cpa
         
-    elif provin and code:
+    elif provincia and code:
 
         ciudad = []
         reader = fileopen(prov)
@@ -102,23 +126,25 @@ def find_cp(provin='', ciudad='', codigo_postal=0):
                 ciudad.append(' '.join([str(x) for x in (rr[0].split()[1:])]).lower())
                 cpa = '{0}{1}AAA'.format(prov_cp[prov][0], code)
             else:
-                cpa = ' '
-                
-        return prov.replace(' ', '_').title(), cpa, str(code), ciudad
+                localidad, cpa = ' ', ''
         
-    elif provin.replace(' ', '_') in prov_cp.keys():
-        
-        prov = provin.replace(' ', '_')
-        reader = fileopen(provin)
+        provincia = prov.replace(' ', '_').title()       
+        codigo = str(code)
+        ciudad = ciudad.title() 
 
-        if prov in prov_cp.keys():
-            capital_cp = prov_cp[prov][1]
-            ciudad = cap_cp[capital_cp]
+        return provincia, ciudad, codigo, cpa
         
-        provincia = prov.replace("_", " ").title()
+    elif provincia in prov_cp.keys():
+        
+        capital_cp = prov_cp[provincia][1]
+        ciudad = cap_cp[capital_cp]
+        
+        provincia = provincia.replace("_", " ").title()
         ciudad = ciudad.replace("_", " ").title()
+        codigo = str(capital_cp[1:len(capital_cp)])
+        cpa = capital_cp+'AAA'
 
-        return provincia ,ciudad, str(capital_cp[1:len(capital_cp)]), capital_cp+'AAA'
+        return provincia, ciudad, codigo, cpa
         
     elif ciudad:
         try:
@@ -130,40 +156,41 @@ def find_cp(provin='', ciudad='', codigo_postal=0):
                     if prov_ciudad in ciudad or prov_ciudad == ciudad:
                         provincia = prov.replace('_', ' ').title()
                         ciudad = ciudad.replace("_", " ").title()
-                        cp = rr[0].split()[0]
+                        codigo = str(rr[0].split()[0])
                         cpa = prov_cp[prov][0]+rr[0].split()[0]+"AAA"
-            return provincia, ciudad, str(cp), cpa
+            return provincia, ciudad, codigo, cpa
         except: 
-            return ' ', ciudad, ' ', ' '
+            return "informacion no encontrada ('', '', '', '')"
         
     elif code:
 
         ciudad = []
+        try:
+            for k, i in prov_cp.iteritems():
+                if i[2]:
+                    r_size = len(i[2])
+                    for x in range(r_size):
+                        r = i[2][x].split()
+                        if code in range(int(r[0]), int(r[1])):
+                            reader = fileopen(k)
+                            for row in reader:
+                                rr = row.values()
+                                if int(rr[0].split()[0]) == code:
+                                    provincia = k.title()
+                                    codigo = str(code)
+                                    cpa = '{0}{1}AAA'.format(prov_cp[k][0], code)
+                                    ciudad.append(' '.join([str(x) for x in (rr[0].split()[1:])]).lower())
+                                    ciudad = ciudad.title()
+            return provincia, codigo, cpa, ciudad
+        except:
+            return "informacion no encontrada ('', '', '', '')"
 
-        for k, i in prov_cp.iteritems():
-            if i[2]:
-                r_size = len(i[2])
-                for x in range(r_size):
-                    r = i[2][x].split()
-                    if code in range(int(r[0]), int(r[1])):
-                        reader = fileopen(k)
-                        for row in reader:
-                            rr = row.values()
-                            if int(rr[0].split()[0]) == code:
-                                provincia = k
-                                cp = code
-                                cpa = '{0}{1}AAA'.format(prov_cp[k][0], code)
-                                ciudad.append(' '.join([str(x) for x in (rr[0].split()[1:])]).lower())
-                                
-        return provincia, str(cp), cpa, ciudad
-            
     else:
-        return ' ', ' ', ' ', ' '
+        return "informacion no encontrada ('', '', '', '')"
     
 
-if __name__ == '__main__':
+def test_withCPA():
 
-    #print find_cp(provin="buenos aires")    
     CPAProponente = [ 
         5000, 
         5000, 
@@ -195,6 +222,27 @@ if __name__ == '__main__':
         9400 
     ]
     
-    # test
     for cp in CPAProponente:
         print find_cp(codigo_postal=cp)
+
+
+if __name__ == '__main__':
+
+    if dict_cmd.get('-p') and dict_cmd.get('-l'):
+        result = find_cp(provincia=dict_cmd['-p'], ciudad=dict_cmd['-l'])
+        print result
+    elif dict_cmd.get('-p') and dict_cmd.get('-cp'):
+        result = find_cp(provincia=dict_cmd['-p'], codigo_postal=dict_cmd['-cp'])
+        print result
+    elif dict_cmd.get('-l') and dict_cmd.get('-cp'):
+        result = find_cp(ciudad=dict_cmd['-l'], codigo_postal=dict_cmd['-cp'])
+        print result
+    elif dict_cmd.get('-p'):
+        result = find_cp(provincia=dict_cmd['-p'])
+        print result
+    elif dict_cmd.get('-cp'):
+        result = find_cp(codigo_postal=int(dict_cmd.get('-cp')))
+        print result
+    elif dict_cmd.get('-l'):
+        result = find_cp(ciudad=dict_cmd['-l'])
+        print result
